@@ -1,0 +1,41 @@
+<!-- ===================================================================
+     PASTE THIS INTO A SQUARESPACE CODE BLOCK
+     (Edit the page > add a block > Code. Untick "Display Source".)
+
+     1. The username and repo below are already filled in for you.
+     2. Use /staging/ on your hidden test page, /prod/ on the live page.
+     3. To show the small collapsed teaser box instead of opening straight
+        onto the check-in (e.g. on a busy homepage), add ?start=collapsed
+        to the end of the src URL below. Leave it off (or use ?start=open)
+        for a page whose only job is the check-in.
+     ================================================================== -->
+
+<!-- The wrapper div forces full width even if Squarespace's block wrapper
+     would otherwise shrink to fit its content. -->
+<div style="width:100%; min-width:100%;">
+  <iframe
+    id="ldc-petloss"
+    src="https://barryedavids-prog.github.io/ldc-petloss/staging/?start=collapsed"
+    title="A gentle check-in after losing a pet"
+    style="width:100%; min-width:100%; height:640px; border:0; display:block;"
+    scrolling="no"
+    loading="lazy"></iframe>
+</div>
+
+<script>
+(function () {
+  var frame = document.getElementById('ldc-petloss');
+  var ORIGIN = 'https://barryedavids-prog.github.io';   // only trust messages from here
+
+  window.addEventListener('message', function (event) {
+    if (event.origin !== ORIGIN) return;                 // ignore other sites
+    if (event.source !== frame.contentWindow) return;    // ignore other iframes
+    var data = event.data;
+    if (!data || data.type !== 'ldc-petloss-height') return;
+    var height = Number(data.height);
+    if (isFinite(height) && height > 0) {
+      frame.style.height = height + 'px';                // resize: no scrollbars
+    }
+  });
+})();
+</script>
