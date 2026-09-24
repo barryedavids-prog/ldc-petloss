@@ -6,6 +6,9 @@
    at the ends of lines, exactly as they are. If a sentence needs a quote
    mark inside it, use an apostrophe (') rather than a double quote (").
 
+   {them} is replaced with the pet's name if the visitor typed one, or with
+   the word "them" if they didn't. {name} is only used where a name is given.
+
    Nothing in this file is stored or sent anywhere. It is only shown on the
    page.
    ========================================================================== */
@@ -24,12 +27,15 @@ window.LDC_CONTENT = {
 
   /* ---- Opening screen ---- */
   intro: {
-    title: "Take a moment for yourself",
+    kicker: "A gentle check-in",
+    title: "Missing a much-loved pet?",
     body: [
-      "Losing a pet can mean losing a companion, a daily routine and a source of comfort all at once. The grief that follows is real, even when other people don't always see it.",
-      "This isn't a test. There are no right or wrong answers. It takes about 2 minutes to do."
+      "We form deep, meaningful connections with our animals, and when they're no longer with us their absence can feel enormous.",
+      "Six short questions can help you pause and notice how you've been feeling since your loss. This isn't a test and there are no right or wrong answers. It takes about 2 minutes."
     ],
-    privacy: "Everything stays on your device. Nothing you choose here is saved, sent or tracked.",
+    nameLabel: "Their name (optional)",
+    nameHint: "Only used on this page, to make the questions feel more personal.",
+    privacy: "Everything stays on your device. Nothing you choose or type here is saved, sent or tracked.",
     startButton: "Begin"
   },
 
@@ -38,6 +44,9 @@ window.LDC_CONTENT = {
      "statements" are the things to reflect on, one per screen.
      "reflection" is a kind sentence that may appear in the results if the
      visitor felt this statement was true for them.
+     "section" is the heading in the blog post that speaks to this question.
+     It's shown on the results screen as a reason to read the post, so it
+     must match a heading that really is in the post.
      You can add, remove or reorder questions freely (about 5 to 8 works well). */
   questions: {
     prompt: "Lately, how true does this feel for you?",
@@ -46,36 +55,39 @@ window.LDC_CONTENT = {
       { label: "Sometimes",  points: 1 },
       { label: "Often",      points: 2 }
     ],
-    unansweredHint: "There is no right or wrong answer",
     items: [
       {
-        statement: "I miss them in a way that's hard to put into words.",
-        reflection: "The bond with an animal is real, and so is the grief when they're gone."
+        statement: "I miss {them} in a way that's hard to put into words.",
+        reflection: "The bond with an animal is real, and so is the grief when they're gone.",
+        section: "The depth of the bond"
       },
       {
-        statement: "I feel that other people don't really understand how much this loss means to me.",
-        reflection: "When others don't see the size of a loss, grief can feel very lonely."
+        statement: "Other people don't seem to understand how much this loss means to me.",
+        reflection: "When others don't see the size of a loss, grief can feel very lonely.",
+        section: "When others don't understand"
       },
       {
         statement: "I keep going over decisions I made, or wondering if I could have done something differently.",
-        reflection: "Guilt and 'what ifs' are very common after losing a pet, especially when you've had to make difficult decisions for them."
+        reflection: "Guilt and 'what ifs' are very common after losing a pet, especially when you've had to make difficult decisions for them.",
+        section: "The emotional complexity of pet loss"
       },
       {
-        statement: "Home, or my daily routine, feels empty without them.",
-        reflection: "Losing the routines you shared can leave a gap in every part of the day."
+        statement: "Home, or my daily routine, feels empty without {them}.",
+        reflection: "Losing the routines you shared can leave a gap in every part of the day.",
+        section: "Why pet loss hurts so much"
       },
       {
         statement: "I've been finding it hard to sleep, concentrate or get through the day.",
-        reflection: "Grief can affect the body and mind as well as the heart."
+        reflection: "Grief can affect the body and mind as well as the heart.",
+        section: "Finding support through grief"
       },
       {
         statement: "I feel like I should be 'over it' by now.",
-        reflection: "There's no timetable for grief, and no right way to feel."
+        reflection: "There's no timetable for grief, and no right way to feel.",
+        section: "Grief has no timeline"
       }
     ],
     backButton: "Back",
-    nextButton: "Next",
-    finishButton: "See my reflection",
     progressLabel: "Question {current} of {total}"
   },
 
@@ -85,7 +97,9 @@ window.LDC_CONTENT = {
      Sometimes = 1, Often = 2, added up) at which that message is used. With six
      questions the total runs from 0 to 12. Keep the first one at 0. */
   results: {
-    reflectionsHeading: "Some things you told me",
+    thanksNamed: "Thank you for taking a moment for {name}.",
+    thanks: "Thank you for taking a moment for yourself.",
+    reflectionsHeading: "Some things you shared",
     bands: [
       {
         minPoints: 0,
@@ -116,9 +130,22 @@ window.LDC_CONTENT = {
     restartButton: "Start again"
   },
 
+  /* ---- The blog post (the link itself is set in config.js) ----
+     "sectionsIntro" is followed by the blog headings that match the
+     visitor's answers (see "section" on each question above). */
+  blog: {
+    kicker: "Read more from Liane",
+    title: "Grieving after the loss of a pet",
+    quote: "It takes time to adjust to a world that suddenly looks and feels different.",
+    sectionsIntro: "In the post, Liane writes about things you mentioned:",
+    sectionsIntroGeneral: "In the post, Liane writes about:",
+    personal: "She also shares her own loss of Buddy, her much-loved black lab.",
+    button: "Read the blog post"
+  },
+
   /* ---- Breathing pause (shown on the results screen) ---- */
   breathing: {
-    heading: "Would a minute to breathe help first?",
+    heading: "Would a minute to breathe help?",
     intro: "A slow breath out can help your body settle. Follow the circle, or just the words.",
     startButton: "Take a one-minute breathing pause",
     stopButton: "Stop",
@@ -136,7 +163,7 @@ window.LDC_CONTENT = {
   cta: {
     heading: "If you'd like to talk",
     body: "A free introductory call is a chance to say hello, ask any questions and get a feel for whether working together could suit you. There's no pressure and no commitment.",
-    button: "Book a free introductory session"
+    button: "Book a free introductory call"
   },
 
   /* ---- Other pet bereavement support (shown on the results screen).

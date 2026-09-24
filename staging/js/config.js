@@ -4,6 +4,9 @@
 
 window.LDC_CONFIG = {
 
+  /* The blog post the results screen invites people to read. */
+  blogUrl: "https://www.lianedavidscounselling.co.uk/blog/grieving-after-the-loss-of-a-pet",
+
   /* Where the "Book a free introductory call" button goes.
      Replace this placeholder with the real booking or contact page URL. */
   bookingUrl: "https://www.lianedavidscounselling.co.uk/home#contact",
@@ -15,6 +18,10 @@ window.LDC_CONFIG = {
     outSeconds: 6,
     cycles: 6
   },
+
+  /* Pause (in milliseconds) after an answer is tapped before moving on to
+     the next question, so the visitor sees their choice register. */
+  advanceDelay: 380,
 
   /* Start as a small collapsed box (see content.js: teaser) instead of
      opening straight onto the first screen. Useful for a busy page like

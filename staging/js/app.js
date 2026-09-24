@@ -14,9 +14,62 @@
   var announcer = document.getElementById('announcer');
 
   var questions = C.questions.items;
-  var answers = [];        // answers[i] = index of the chosen option (memory only)
-  var breathTimer = null;  // handle for the breathing pause timer
-  var firstScreen = true;  // true until the first screen has been drawn
+  var answers = [];         // answers[i] = index of the chosen option (memory only)
+  var petName = '';         // optional, typed on the intro screen (memory only)
+  var breathTimer = null;   // handle for the breathing pause timer
+  var advanceTimer = null;  // handle for the short pause after an answer is tapped
+  var firstScreen = true;   // true until the first screen has been drawn
+
+  /* Viewed directly (not inside the Squarespace iframe): give the page its
+     own background so it still looks finished. */
+  try {
+    if (window.top === window.self) document.documentElement.classList.add('standalone');
+  } catch (e) { /* cross-origin parent: we're framed */ }
+
+  /* ---------- Illustrations ----------
+     Fixed strings written here, never built from visitor input, and all
+     decorative (hidden from screen readers). */
+
+  /* #ldc-paw (one paw print, centred on 0,0) is defined once in index.html
+     and reused here with <use>. */
+
+  /* A trail of paw prints walking over the hills towards a low sun */
+  function heroSvg() {
+    var prints = [
+      [58, 160, 1.15, 62], [88, 151, 1.05, 70], [114, 156, 0.95, 62], [140, 147, 0.86, 70],
+      [162, 151, 0.78, 62], [184, 143, 0.7, 70], [203, 146, 0.62, 62], [221, 140, 0.55, 70]
+    ].map(function (p) {
+      return '<g class="print" transform="translate(' + p[0] + ' ' + p[1] + ') rotate(' + p[3] + ') scale(' + p[2] + ')"><use href="#ldc-paw"/></g>';
+    }).join('');
+    return '<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMax slice" focusable="false">' +
+      '<defs><linearGradient id="ldc-sky" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#cfe2f3"/><stop offset="1" stop-color="#fbe2c6"/></linearGradient></defs>' +
+      '<rect width="400" height="170" fill="url(#ldc-sky)"/>' +
+      '<circle class="sun" cx="292" cy="112" r="34" fill="#f5bf78"/>' +
+      '<g class="birds" fill="none" stroke="#105f96" stroke-width="1.6" stroke-linecap="round" opacity="0.45">' +
+      '<path d="M70 66 q6 -6 12 0 q6 -6 12 0"/><path d="M104 54 q4 -4 8 0 q4 -4 8 0"/></g>' +
+      '<path d="M0 116 C 80 96, 170 104, 250 112 S 360 98, 400 106 V170 H0Z" fill="#9dbdd9"/>' +
+      '<path d="M0 132 C 90 118, 200 120, 290 134 S 370 138, 400 132 V170 H0Z" fill="#5a8cb6"/>' +
+      '<g fill="#ffffff" opacity="0.9">' + prints + '</g></svg>';
+  }
+
+  /* A heart holding a paw print, for the results screen */
+  function heartSvg() {
+    return '<svg viewBox="0 0 48 48" focusable="false">' +
+      '<path d="M24 43C10 33 3 25 3 16.5A10.5 10.5 0 0 1 24 12a10.5 10.5 0 0 1 21 4.5C45 25 38 33 24 43Z" fill="#105f96"/>' +
+      '<g fill="#fbe2c6" transform="translate(24 23) scale(1.05)"><use href="#ldc-paw"/></g></svg>';
+  }
+
+  function pawSvg() {
+    return '<svg viewBox="-10 -10 20 20" focusable="false"><use href="#ldc-paw"/></svg>';
+  }
+
+  function illustration(className, markup) {
+    var wrap = el('div', className);
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = markup;
+    return wrap;
+  }
 
   /* ---------- Small helpers ---------- */
 
@@ -40,6 +93,11 @@
     lines.forEach(function (line) { container.appendChild(el('p', className, line)); });
   }
 
+  /* Fill in {them} / {name} with the pet's name, if one was given */
+  function personalise(text) {
+    return text.replace(/\{them\}/g, petName || 'them').replace(/\{name\}/g, petName);
+  }
+
   function announce(message) {
     announcer.textContent = '';
     // A tiny delay makes screen readers reliably notice the change
@@ -50,6 +108,7 @@
      preventScroll stops the parent Squarespace page jumping around. */
   function show(card, heading) {
     stopBreathing();
+    clearTimeout(advanceTimer);
     stage.textContent = '';
     stage.appendChild(card);
     heading.setAttribute('tabindex', '-1');
@@ -65,6 +124,7 @@
   function showTeaser() {
     var T = C.teaser;
     var card = el('section', 'card teaser');
+    card.appendChild(illustration('hero hero-small', heroSvg()));
     var h = el('h1', null, T.heading);
     card.appendChild(h);
     card.appendChild(el('p', null, T.body));
@@ -78,15 +138,61 @@
   }
 
   function showIntro() {
-    var card = el('section', 'card');
-    var h = el('h1', null, C.intro.title);
-    card.appendChild(h);
-    paragraphs(card, C.intro.body);
-    card.appendChild(el('p', 'privacy-note', C.intro.privacy));
+    var I = C.intro;
+    var card = el('section', 'card card-hero');
+    card.appendChild(illustration('hero', heroSvg()));
+
+    var body = el('div', 'card-body');
+    body.appendChild(el('p', 'kicker', I.kicker));
+    var h = el('h1', null, I.title);
+    body.appendChild(h);
+    paragraphs(body, I.body);
+
+    var field = el('div', 'field');
+    var label = el('label', null, I.nameLabel);
+    label.htmlFor = 'pet-name';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'pet-name';
+    input.maxLength = 40;
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.value = petName;
+    input.setAttribute('aria-describedby', 'pet-name-hint');
+    var hint = el('p', 'field-hint', I.nameHint);
+    hint.id = 'pet-name-hint';
+    field.appendChild(label);
+    field.appendChild(input);
+    field.appendChild(hint);
+    body.appendChild(field);
+
+    body.appendChild(el('p', 'privacy-note', I.privacy));
+
+    function begin() {
+      petName = input.value.trim();
+      showQuestion(0);
+    }
+    /* Enter in the name box starts, like submitting a form would */
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); begin(); }
+    });
+
     var row = el('div', 'btn-row');
-    row.appendChild(button(C.intro.startButton, 'btn', function () { showQuestion(0); }));
-    card.appendChild(row);
+    row.appendChild(button(I.startButton, 'btn', begin));
+    body.appendChild(row);
+    card.appendChild(body);
     show(card, h);
+  }
+
+  /* One paw print per question: walked (answered), here (current), ahead */
+  function pawTrail(current, total) {
+    var trail = el('div', 'paw-trail');
+    trail.setAttribute('aria-hidden', 'true'); // the progress text already says it
+    for (var n = 0; n < total; n++) {
+      var state = n < current ? 'walked' : (n === current ? 'here' : 'ahead');
+      trail.appendChild(illustration('paw ' + state, pawSvg()));
+    }
+    return trail;
   }
 
   function showQuestion(i) {
@@ -94,61 +200,47 @@
     var total = questions.length;
     var card = el('section', 'card');
 
-    var progressText = Q.progressLabel
+    card.appendChild(pawTrail(i, total));
+    card.appendChild(el('p', 'progress-text', Q.progressLabel
       .replace('{current}', i + 1)
-      .replace('{total}', total);
-    card.appendChild(el('p', 'progress-text', progressText));
+      .replace('{total}', total)));
 
-    var bar = el('div', 'progress-bar');
-    bar.setAttribute('aria-hidden', 'true'); // the text above already says it
-    var fill = el('div', 'progress-fill');
-    fill.style.width = ((i + 1) / total * 100) + '%';
-    bar.appendChild(fill);
-    card.appendChild(bar);
+    card.appendChild(el('p', 'q-prompt', Q.prompt));
+    var statement = el('h2', 'q-statement', personalise(questions[i].statement));
+    statement.id = 'q-statement';
+    card.appendChild(statement);
 
-    /* A fieldset + legend groups the radio buttons so screen readers read the
-       question together with each answer. */
-    var fs = el('fieldset');
-    var legend = el('legend');
-    legend.appendChild(el('span', 'q-prompt', Q.prompt));
-    var statement = el('span', 'q-statement', questions[i].statement);
-    legend.appendChild(statement);
-    fs.appendChild(legend);
-
-    var radios = [];
-    Q.options.forEach(function (opt, idx) {
-      var label = el('label', 'option');
-      var input = document.createElement('input');
-      input.type = 'radio';
-      input.name = 'answer';
-      input.value = idx;
-      if (answers[i] === idx) input.checked = true;
-      radios.push(input);
-      label.appendChild(input);
-      label.appendChild(el('span', null, opt.label));
-      fs.appendChild(label);
+    /* Tapping an answer chooses it and moves on, which suits phones.
+       aria-pressed tells screen readers which one was chosen before. */
+    var group = el('div', 'options');
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-labelledby', 'q-statement');
+    var locked = false;
+    var buttons = Q.options.map(function (opt, idx) {
+      var b = button('', 'option', function () {
+        if (locked) return;
+        locked = true;
+        answers[i] = idx;
+        buttons.forEach(function (other) {
+          other.setAttribute('aria-pressed', String(other === b));
+        });
+        advanceTimer = setTimeout(function () {
+          if (i === total - 1) showResults(); else showQuestion(i + 1);
+        }, CFG.advanceDelay);
+      });
+      b.setAttribute('aria-pressed', String(answers[i] === idx));
+      var dot = el('span', 'option-dot');
+      dot.setAttribute('aria-hidden', 'true');
+      b.appendChild(dot);
+      b.appendChild(el('span', null, opt.label));
+      group.appendChild(b);
+      return b;
     });
-    card.appendChild(fs);
-
-    var hint = el('p', 'hint', Q.unansweredHint);
-    hint.hidden = true;
-    hint.setAttribute('role', 'status');
-    card.appendChild(hint);
+    card.appendChild(group);
 
     var row = el('div', 'btn-row');
-    row.appendChild(button(Q.backButton, 'btn btn-secondary', function () {
+    row.appendChild(button(Q.backButton, 'btn btn-quiet', function () {
       if (i === 0) showIntro(); else showQuestion(i - 1);
-    }));
-    var isLast = i === total - 1;
-    row.appendChild(button(isLast ? Q.finishButton : Q.nextButton, 'btn', function () {
-      var chosen = radios.filter(function (r) { return r.checked; })[0];
-      if (!chosen) {
-        hint.hidden = false;
-        radios[0].focus({ preventScroll: true });
-        return;
-      }
-      answers[i] = Number(chosen.value);
-      if (isLast) showResults(); else showQuestion(i + 1);
     }));
     card.appendChild(row);
 
@@ -156,18 +248,27 @@
     show(card, statement);
   }
 
-  function totalPoints() {
-    return answers.reduce(function (sum, optIndex) {
-      return sum + C.questions.options[optIndex].points;
-    }, 0);
+  function points(i) {
+    return C.questions.options[answers[i]].points;
   }
 
-  function pickBand(points) {
+  function totalPoints() {
+    return answers.reduce(function (sum, optIndex, i) { return sum + points(i); }, 0);
+  }
+
+  function pickBand(total) {
     var chosen = C.results.bands[0];
     C.results.bands.forEach(function (band) {
-      if (points >= band.minPoints) chosen = band;
+      if (total >= band.minPoints) chosen = band;
     });
     return chosen;
+  }
+
+  /* Question numbers, strongest answers first (ties keep question order) */
+  function byStrength() {
+    return questions.map(function (q, i) { return i; }).sort(function (a, b) {
+      return (points(b) - points(a)) || (a - b);
+    });
   }
 
   /* Reflections: kind sentences for statements the visitor said were "Often"
@@ -177,7 +278,7 @@
     var maxPoints = Math.max.apply(null, opts.map(function (o) { return o.points; }));
     function collect(target) {
       return questions.filter(function (q, i) {
-        return C.questions.options[answers[i]].points === target && q.reflection;
+        return points(i) === target && q.reflection;
       }).map(function (q) { return q.reflection; });
     }
     var list = collect(maxPoints);
@@ -185,12 +286,56 @@
     return list.slice(0, 3);
   }
 
+  /* Blog headings that speak to what the visitor said was true (max 3).
+     If nothing was, just the first few headings in question order. */
+  function pickSections() {
+    var relevant = byStrength().filter(function (i) {
+      return points(i) > 0 && questions[i].section;
+    });
+    var matched = relevant.length > 0;
+    var order = matched ? relevant : questions.map(function (q, i) { return i; });
+    var list = [];
+    order.forEach(function (i) {
+      var s = questions[i].section;
+      if (s && list.indexOf(s) === -1) list.push(s);
+    });
+    return { matched: matched, list: list.slice(0, 3) };
+  }
+
+  function buildBlog() {
+    var B = C.blog;
+    var panel = el('div', 'blog');
+    panel.appendChild(el('p', 'kicker', B.kicker));
+    panel.appendChild(el('h3', 'blog-title', B.title));
+    var quote = el('blockquote', 'blog-quote');
+    quote.appendChild(el('p', null, B.quote));
+    panel.appendChild(quote);
+
+    var sections = pickSections();
+    panel.appendChild(el('p', null, sections.matched ? B.sectionsIntro : B.sectionsIntroGeneral));
+    var ul = el('ul', 'chips');
+    sections.list.forEach(function (s) { ul.appendChild(el('li', null, s)); });
+    panel.appendChild(ul);
+    panel.appendChild(el('p', null, B.personal));
+
+    var link = el('a', 'btn btn-light', B.button);
+    link.href = CFG.blogUrl;
+    link.target = '_top';
+    panel.appendChild(link);
+    return panel;
+  }
+
   function showResults() {
     var band = pickBand(totalPoints());
     var R = C.results;
     var card = el('section', 'card');
 
-    var h = el('h2', null, band.title);
+    var top = el('div', 'result-top');
+    top.appendChild(illustration('heart', heartSvg()));
+    top.appendChild(el('p', 'kicker', petName ? personalise(R.thanksNamed) : R.thanks));
+    card.appendChild(top);
+
+    var h = el('h2', 'result-title', band.title);
     card.appendChild(h);
     paragraphs(card, band.body);
 
@@ -202,13 +347,15 @@
       card.appendChild(ul);
     }
 
+    card.appendChild(buildBlog());
+
     card.appendChild(buildBreathing());
 
     /* Call to action: a soft invitation, not a hard sell */
     var cta = el('div', 'panel');
     cta.appendChild(el('h3', null, C.cta.heading));
     cta.appendChild(el('p', null, C.cta.body));
-    var link = el('a', 'btn', C.cta.button);
+    var link = el('a', 'btn btn-secondary', C.cta.button);
     link.href = CFG.bookingUrl;
     link.target = '_top';
     cta.appendChild(link);
@@ -225,7 +372,7 @@
     card.appendChild(el('p', 'muted small', R.disclaimer));
 
     var row = el('div', 'btn-row');
-    row.appendChild(button(R.restartButton, 'btn btn-secondary', function () {
+    row.appendChild(button(R.restartButton, 'btn btn-quiet', function () {
       answers = [];
       showIntro();
     }));

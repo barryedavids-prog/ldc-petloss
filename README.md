@@ -16,11 +16,12 @@ chooses is stored or sent anywhere.
 | `staging/` | The version you work on and test. Embedded on the hidden test page. |
 | `prod/` | The live version. Only ever changed by `promote.ps1`. Embedded on the live page. |
 | `staging/js/content.js` | **All wording.** The counsellor edits this. |
-| `staging/js/config.js` | Settings: booking URL, breathing timings. |
+| `staging/js/config.js` | Settings: blog URL, booking URL, breathing timings. |
 | `staging/css/styles.css` | Look and feel. Brand colours and fonts are variables at the top. |
 | `staging/js/app.js` | The logic. Shouldn't need editing for wording changes. |
 | `docs/squarespace-embed.html` | The snippet to paste into a Squarespace Code Block. |
 | `docs/embed-test.html` | A local fake "Squarespace page" to test auto-resizing. |
+| `docs/social-posts.md` | Suggested wording for social media posts linking to the check-in. |
 | `serve.ps1` / `promote.ps1` | Local preview / staging-to-prod promotion. |
 
 ## 1. Editing the wording
@@ -29,7 +30,17 @@ Open `staging/js/content.js`. Change text between the quote marks. Keep the quot
 marks and the commas at the end of lines. Use an apostrophe (`'`) rather than a
 double quote inside a sentence. The file's comments explain each section.
 
-The **booking link** is in `staging/js/config.js` (`bookingUrl`).
+The **blog link** and **booking link** are in `staging/js/config.js` (`blogUrl`,
+`bookingUrl`).
+
+**How it leads to the blog:** each question has a `section`, which is a heading from
+the blog post. The results screen shows the headings that match what the visitor
+said was true for them (up to 3), with a button to read the post. If you rename a
+heading in the blog, update it in `content.js` too.
+
+**The pet's name:** the opening screen asks for it (optional). It fills in `{them}`
+in the questions and `{name}` in the results. Like everything else, it is never
+saved or sent.
 
 **Collapsed teaser box:** for a busy page like the homepage, the widget can start
 as a small box with a short question and a button, expanding to the full check-in
