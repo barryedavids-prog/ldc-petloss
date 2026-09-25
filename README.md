@@ -38,8 +38,8 @@ the blog post. The results screen shows the headings that match what the visitor
 said was true for them (up to 3), with a button to read the post. If you rename a
 heading in the blog, update it in `content.js` too.
 
-**The pet's name:** the opening screen asks for it (optional). It fills in `{them}`
-in the questions and `{name}` in the results. Like everything else, it is never
+**The pet's name:** the opening screen asks for it (optional). It fills in `{name}`
+in the results (and `{them}`, if you use it anywhere). Like everything else, it is never
 saved or sent.
 
 **Collapsed teaser box:** for a busy page like the homepage, the widget can start

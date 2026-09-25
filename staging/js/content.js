@@ -6,8 +6,9 @@
    at the ends of lines, exactly as they are. If a sentence needs a quote
    mark inside it, use an apostrophe (') rather than a double quote (").
 
-   {them} is replaced with the pet's name if the visitor typed one, or with
-   the word "them" if they didn't. {name} is only used where a name is given.
+   {name} is replaced with the pet's name if the visitor typed one (only
+   used in thanksNamed below). {them} can also be used in any text: it
+   becomes the pet's name, or the word "them" if no name was given.
 
    Nothing in this file is stored or sent anywhere. It is only shown on the
    page.
@@ -34,7 +35,7 @@ window.LDC_CONTENT = {
       "Six short questions can help you pause and notice how you've been feeling since your loss. This isn't a test and there are no right or wrong answers. It takes about 2 minutes."
     ],
     nameLabel: "Their name (optional)",
-    nameHint: "Only used on this page, to make the questions feel more personal.",
+    nameHint: "Only used on this page, in your reflection at the end.",
     privacy: "Everything stays on your device. Nothing you choose or type here is saved, sent or tracked.",
     startButton: "Begin"
   },
@@ -44,7 +45,8 @@ window.LDC_CONTENT = {
      "statements" are the things to reflect on, one per screen.
      "reflection" is a kind sentence that may appear in the results if the
      visitor felt this statement was true for them.
-     "section" is the heading in the blog post that speaks to this question.
+     "section" is the heading in the blog post that speaks to this question
+     (two questions can share one; it's only shown once).
      It's shown on the results screen as a reason to read the post, so it
      must match a heading that really is in the post.
      You can add, remove or reorder questions freely (about 5 to 8 works well). */
@@ -57,32 +59,32 @@ window.LDC_CONTENT = {
     ],
     items: [
       {
-        statement: "I miss {them} in a way that's hard to put into words.",
-        reflection: "The bond with an animal is real, and so is the grief when they're gone.",
-        section: "The depth of the bond"
-      },
-      {
-        statement: "Other people don't seem to understand how much this loss means to me.",
-        reflection: "When others don't see the size of a loss, grief can feel very lonely.",
-        section: "When others don't understand"
-      },
-      {
-        statement: "I keep going over decisions I made, or wondering if I could have done something differently.",
-        reflection: "Guilt and 'what ifs' are very common after losing a pet, especially when you've had to make difficult decisions for them.",
-        section: "The emotional complexity of pet loss"
-      },
-      {
-        statement: "Home, or my daily routine, feels empty without {them}.",
-        reflection: "Losing the routines you shared can leave a gap in every part of the day.",
+        statement: "My grief feels bigger than I expected it to.",
+        reflection: "Grief after losing an animal can be as deep as any loss. It reflects how much they meant to you.",
         section: "Why pet loss hurts so much"
       },
       {
-        statement: "I've been finding it hard to sleep, concentrate or get through the day.",
+        statement: "I feel I have to hide or play down my grief around other people.",
+        reflection: "Having to hide your grief can make it feel heavier, and lonelier.",
+        section: "When others don't understand"
+      },
+      {
+        statement: "I find myself caught up in guilt or 'what ifs'.",
+        reflection: "Guilt and 'what ifs' are very common in grief, especially when you've had to make difficult decisions.",
+        section: "The emotional complexity of pet loss"
+      },
+      {
+        statement: "I've felt angry, numb or overwhelmed, sometimes all in the same day.",
+        reflection: "Grief isn't only sadness. Anger, numbness and confusion are all part of it too.",
+        section: "The emotional complexity of pet loss"
+      },
+      {
+        statement: "Grief has been affecting my sleep, concentration or energy.",
         reflection: "Grief can affect the body and mind as well as the heart.",
         section: "Finding support through grief"
       },
       {
-        statement: "I feel like I should be 'over it' by now.",
+        statement: "I feel I should be 'over it' by now.",
         reflection: "There's no timetable for grief, and no right way to feel.",
         section: "Grief has no timeline"
       }
